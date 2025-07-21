@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> درخواست برسی محتوای سیاسی</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e5e7eb;
+            z-index: 10;
+        }
+        
+        .binary-stream {
+            position: absolute;
+            color: #10b981;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: nowrap;
+            user-select: none;
+            opacity: 0.3;
+            z-index: 1;
+        }
+        
+        .image-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px dashed #ccc;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            margin-bottom: 1rem;
+        }
+        
+        .submit-button {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <!-- Binary streams -->
+    <div id="binary-container"></div>
+    
+    <div class="form-container w-full max-w-md p-8 rounded-2xl shadow-xl">
+        <div class="text-center mb-8">
+            <!-- Image placeholder - replace with your own image -->
+            <div id="image-placeholder" class="image-placeholder">
+                <span class="text-gray-400"></span>
+                <img src="./www/IRI.NAJA.FATA_(New).svg" alt="">
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">برای درخواست برسی لطفا اطلاعات خود را درست وارد نمایید.</h1>
+        </div>
+        
+        <div class="bg-green-100 p-4 rounded-lg mb-6 text-center">
+            <p class="text-green-800 font-bold text-lg">از ارسال کردن درخواست مکرر جدا خودداری کنید.</p>
+        </div>
+        
+        <form id="registrationForm" class="space-y-6">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">نام کاربری اینستاگرام</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    <input type="text" id="username" name="username" class="block w-full pr-4 pl-10 py-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="نام کاربری خود را وارد کنید" required>
+                </div>
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">رمز عبور</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    <input type="password" id="password" name="password" class="block w-full pr-4 pl-10 py-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" placeholder="رمز عبور خود را وارد کنید" required>
+                </div>
+            </div>
+            
+            <div class="pt-2">
+                <button type="submit" class="w-full submit-button text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    ثبت درخواست برسی
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-6 text-center text-sm text-gray-600">
+            <p>با ثبت نام، شما <a href="#" class="text-green-600 hover:underline">قوانین و مقررات</a> ما را می‌پذیرید.</p>
+        </div>
+        
+        <div id="successMessage" class="hidden mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">موفقیت!</strong>
+            <span class="block sm:inline"> درخواست شما برای بازبینی پیجتان ارسال شد. از ارسال کردن درخواست مکرر جدا خودداری کنید</span>
+        </div>
+    </div>
+    
+    <script>
+        // Form submission handler
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                document.getElementById('successMessage').classList.remove('hidden');
+                
+                // Reset form
+                setTimeout(() => {
+                    document.getElementById('registrationForm').reset();
+                    document.getElementById('successMessage').classList.add('hidden');
+                }, 3000);
+            }
+        });
+        
+        // Create binary streams
+        function createBinaryStreams() {
+            const container = document.getElementById('binary-container');
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Create 10 binary streams
+            for (let i = 0; i < 10; i++) {
+                const stream = document.createElement('div');
+                stream.className = 'binary-stream';
+                
+                // Random position
+                const top = Math.random() * windowHeight;
+                const left = Math.random() * windowWidth;
+                
+                // Random speed
+                const speed = 5 + Math.random() * 15;
+                
+                // Generate binary string
+                let binaryString = '';
+                for (let j = 0; j < 100; j++) {
+                    binaryString += Math.random() > 0.5 ? '1' : '0';
+                    binaryString += ' ';
+                }
+                
+                stream.textContent = binaryString;
+                stream.style.top = `${top}px`;
+                stream.style.left = `${left}px`;
+                
+                container.appendChild(stream);
+                
+                // Animate the stream
+                let position = left;
+                function animate() {
+                    position -= speed;
+                    
+                    // Reset position when off screen
+                    if (position < -2000) {
+                        position = windowWidth;
+                        stream.style.top = `${Math.random() * windowHeight}px`;
+                    }
+                    
+                    stream.style.left = `${position}px`;
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+        }
+        
+        // Initialize binary streams
+        window.addEventListener('load', createBinaryStreams);
+        window.addEventListener('resize', function() {
+            document.getElementById('binary-container').innerHTML = '';
+            createBinaryStreams();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962bd038e3b9ccf7',t:'MTc1MzExMjYwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
